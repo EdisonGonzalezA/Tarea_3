@@ -8,7 +8,7 @@ import { Iproveedor } from '../Interfaces/iproveedor';
 })
 export class ProveedorService {
 
-  apiurl = 'http://localhost/sexto/Clases/Clase5/controllers/proveedores.controller.php?op=';
+  apiurl = 'http://localhost/sexto/Tareas/Tarea3/Tarea3/controllers/proveedores.controller.php?op=';
 
   constructor(private lector: HttpClient) { }
 

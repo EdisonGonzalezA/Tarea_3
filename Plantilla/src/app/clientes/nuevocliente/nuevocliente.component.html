@@ -12,7 +12,7 @@
       <div class="row">
         <div class="form-group mb-3">
           <label class="form-label" for="Cedula">Cedula</label>
-          <input formControlName="Cedula" type="text" class="form-control" id="Cedula" placeholder="Ingrese la cedula Cedula" />
+          <input formControlName="Cedula" type="text" class="form-control" id="Cedula" placeholder="Ingrese la cedula" />
           <div *ngIf="frm_Cliente.get('Cedula').invalid && frm_Cliente.get('Cedula').touched">
             <small *ngIf="frm_Cliente.get('Cedula').hasError('required')" style="color: red">La cedula es requerida</small>
             <small *ngIf="frm_Cliente.get('Cedula').hasError('cedulaInvalida')" style="color: red">La cedula ingresa no es correcta</small>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ClientesService } from 'src/app/Services/clientes.service';
 import { Icliente } from 'src/app/Interfaces/icliente';
@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './nuevocliente.component.html',
   styleUrl: './nuevocliente.component.scss'
 })
-export class NuevoclienteComponent {
+export class NuevoclienteComponent implements OnInit {
   frm_Cliente = new FormGroup({
     //idClientes: new FormControl(),
     Nombres: new FormControl('', Validators.required),
@@ -22,74 +22,73 @@ export class NuevoclienteComponent {
     Cedula: new FormControl('', [Validators.required, this.validadorCedulaEcuador]),
     Correo: new FormControl('', [Validators.required, Validators.email])
   });
-  idClientes=0;
-  titulo="Nuevo Cliente";
-
-  constructor(private clienteService: ClientesService, private navegacion: Router, private ruta:ActivatedRoute) { }
+  idClientes = 0;
+  titulo = 'Nuevo Cliente';
+  constructor(
+    private clienteServicio: ClientesService,
+    private navegacion: Router,
+    private ruta: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-    this.idClientes = parseInt(this.ruta.snapshot.paramMap.get('id'),10);
-    if(this.idClientes > 0){
-      this.clienteService
+    this.idClientes = parseInt(this.ruta.snapshot.paramMap.get('idCliente'));
+    if (this.idClientes > 0) {
+      this.clienteServicio
       .uno(this.idClientes)
-      .subscribe((cliente) => {
-          this.frm_Cliente.controls['Nombres'].setValue(cliente.Nombres);
-          this.frm_Cliente.controls['Direccion'].setValue(cliente.Direccion);
-          this.frm_Cliente.controls['Telefono'].setValue(cliente.Telefono);
-          this.frm_Cliente.controls['Cedula'].setValue(cliente.Cedula);
-          this.frm_Cliente.controls['Correo'].setValue(cliente.Correo);
-          this.titulo = 'Actualizar Cliente';
-        });
+      .subscribe((uncliente) => {
+        console.log(uncliente);
+        this.frm_Cliente.controls['Nombres'].setValue(uncliente.Nombres);
+        this.frm_Cliente.controls['Direccion'].setValue(uncliente.Direccion);
+        this.frm_Cliente.controls['Telefono'].setValue(uncliente.Telefono);
+        this.frm_Cliente.controls['Cedula'].setValue(uncliente.Cedula);
+        this.frm_Cliente.controls['Correo'].setValue(uncliente.Correo);
+        this.titulo = 'Editar Cliente';
+      });
     }
   }
 
-  limpiarcaja(){
-    alert('limpiar caja');
-  }
 
+  grabar() {
+    let cliente: Icliente = {
+      idClientes: this.idClientes,
+      Nombres: this.frm_Cliente.controls['Nombres'].value,
+      Direccion: this.frm_Cliente.controls['Direccion'].value,
+      Telefono: this.frm_Cliente.controls['Telefono'].value,
+      Cedula: this.frm_Cliente.controls['Cedula'].value,
+      Correo: this.frm_Cliente.controls['Correo'].value
+    };
 
-  grabar() {    
-      let cliente: Icliente = {
-        idClientes: this.idClientes,
-        Nombres: this.frm_Cliente.controls['Nombres'].value,
-        Direccion: this.frm_Cliente.controls['Direccion'].value,
-        Telefono: this.frm_Cliente.controls['Telefono'].value,
-        Cedula: this.frm_Cliente.controls['Cedula'].value,
-        Correo: this.frm_Cliente.controls['Correo'].value
-      };
-      Swal.fire({
-        title: 'Clientes',
-        text: 'Desea gurdar al Cliente ' + this.frm_Cliente.controls['Nombres'].value,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ff8000',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Grabar!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          if(this.idClientes == 0 || isNaN(this.idClientes)){
-            this.clienteService.insertar(cliente).subscribe(
-              (respuesta) => {
-                if(parseInt(respuesta) > 1){
-                  this.navegacion.navigate(['/clientes']);
-                }else{
-                  alert("Error al grabar");
-                }
-              });
-            } else{
-              this.clienteService.actualizar(cliente).subscribe(
-                (respuesta) => {
-                  if(parseInt(respuesta) > 0){
-                    this.idClientes = 0;
-                    alert('Actualizado con exito');
-                    this.navegacion.navigate(['/clientes']);
-                  }else{
-                    alert('Error al actualizar');
-                  }
-              });
-            }
-        }  
-      });
+    Swal.fire({
+      title: 'Clientes',
+      text: 'Desea gurdar al Cliente ' + this.frm_Cliente.controls['Nombres'].value,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f00',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Grabar!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (this.idClientes > 0) {
+          this.clienteServicio.actualizar(cliente).subscribe((res: any) => {
+            Swal.fire({
+              title: 'Clientes',
+              text: res.mensaje,
+              icon: 'success'
+            });
+            this.navegacion.navigate(['/clientes']);
+          });
+        } else {
+          this.clienteServicio.insertar(cliente).subscribe((res: any) => {
+            Swal.fire({
+              title: 'Clientes',
+              text: res.mensaje,
+              icon: 'success'
+            });
+            this.navegacion.navigate(['/clientes']);
+          });
+        }
+      }
+    });
   }
 
   validadorCedulaEcuador(control: AbstractControl): ValidationErrors | null {
